@@ -65,7 +65,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 UserDetails userDetails =
                         userDetailsService.loadUserByUsername(email);
 
-                if (!jwtService.isTokenValid(jwt, email)) {
+                boolean tokenValid = jwtService.isTokenValid(jwt, email);
+
+                if (!tokenValid) {
                     response.sendError(
                             HttpServletResponse.SC_UNAUTHORIZED,
                             "Invalid or expired JWT token"
