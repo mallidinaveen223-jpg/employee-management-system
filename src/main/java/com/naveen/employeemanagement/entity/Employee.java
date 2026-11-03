@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
+import java.time.LocalDateTime;
+import  jakarta.validation.constraints.PositiveOrZero;
 
 @Entity
 @Table(name = "employees")
@@ -19,11 +21,22 @@ public class Employee {
     @Email(message = "Email must be valid")
     private String email;
 
+    @Column(nullable = false)
+    private String passwordHash;
+
     @NotBlank(message = "Department is required")
     private String department;
 
-    @Positive(message = "Salary must be greater than zero")
+    @PositiveOrZero(message = "Salary cannot be negative")
     private double salary;
+
+    @Column(unique = true)
+    private String employeeCode;
+    private String mobile;
+    private String designation;
+    private String role = "EMPLOYEE"; // Default role
+    private LocalDateTime joiningDate;
+    private String employmentStatus = "ACTIVE"; // Default employment status
 
     public Employee() {
     }
@@ -42,6 +55,14 @@ public class Employee {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
     }
 
     public Long getId() {
@@ -66,5 +87,57 @@ public class Employee {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getDesignation() {
+        return designation;
+    }
+
+    public void setDesignation(String designation) {
+        this.designation = designation;
+    }
+
+    public String getEmployeeCode() {
+        return employeeCode;
+    }
+
+    public void setEmployeeCode(String employeeCode) {
+        this.employeeCode = employeeCode;
+    }
+
+    public String getEmploymentStatus() {
+        return employmentStatus;
+    }
+
+    public void setEmploymentStatus(String employmentStatus) {
+        this.employmentStatus = employmentStatus;
+    }
+
+    public LocalDateTime getJoiningDate() {
+        return joiningDate;
+    }
+
+    public void setJoiningDate(LocalDateTime joiningDate) {
+        this.joiningDate = joiningDate;
+    }
+
+    public String getMobile() {
+        return mobile;
+    }
+
+    public void setMobile(String mobile) {
+        this.mobile = mobile;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    public String getEmployeeStatus() {
+        return employmentStatus;
     }
 }
