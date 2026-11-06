@@ -1,0 +1,33 @@
+
+/* Global CSS Reset */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Root configuration */
+
+:root {
+  font-family: Arial, Helvetica, sans-serif;
+  color: #1f2937;
+  background-color: #f8fafc;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Body styling */
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+/* Button styling */
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}

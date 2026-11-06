@@ -1,0 +1,213 @@
+
+/* Employee Page */
+
+.employees-page {
+  padding: 25px;
+  background: #ffffff;
+  border-radius: 12px;
+}
+
+.employees-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.employees-header h2 {
+  color: #10285b;
+  margin-bottom: 8px;
+}
+
+.employees-header p {
+  color: #64748b;
+}
+
+.employees-header button {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 7px;
+  background: #075bea;
+  color: white;
+  cursor: pointer;
+}
+
+/* Search */
+
+.employee-search {
+  width: 100%;
+  padding: 13px;
+  margin-bottom: 20px;
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  outline: none;
+  font-size: 14px;
+}
+
+.employee-search:focus {
+  border-color: #0874f9;
+}
+
+/* Employee Table */
+
+.employees-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.employees-table {
+  width: 100%;
+  min-width: 950px;
+  border-collapse: collapse;
+}
+
+.employees-table th,
+.employees-table td {
+  padding: 13px;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.employees-table th {
+  background: #eff6ff;
+  color: #10285b;
+}
+
+.employees-table td {
+  color: #334155;
+}
+
+/* Success and Error Messages */
+
+.employee-success,
+.employee-error,
+.employee-empty {
+  padding: 12px;
+  margin: 15px 0;
+  border-radius: 7px;
+}
+
+.employee-success {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.employee-error {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.employee-empty {
+  color: #64748b;
+  text-align: center;
+}
+
+/* Edit Employee Form */
+
+.employee-edit-form {
+  padding: 22px;
+  margin-bottom: 25px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+}
+
+.employee-edit-form h3 {
+  color: #10285b;
+  margin-bottom: 20px;
+}
+
+.employee-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.employee-form-grid label {
+  display: block;
+  margin-bottom: 7px;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.employee-form-grid input,
+.employee-form-grid select {
+  width: 100%;
+  height: 42px;
+  padding: 0 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  background: white;
+}
+
+.employee-form-grid input:focus,
+.employee-form-grid select:focus {
+  outline: none;
+  border-color: #0874f9;
+}
+
+.employee-form-grid input:read-only {
+  background: #e2e8f0;
+}
+
+/* Form Buttons */
+
+.employee-form-actions,
+.employee-row-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.employee-form-actions button,
+.employee-edit-button {
+  padding: 9px 14px;
+  border: none;
+  border-radius: 6px;
+  background: #0874f9;
+  color: white;
+  cursor: pointer;
+}
+
+.employee-form-actions .employee-cancel-button {
+  background: #64748b;
+}
+
+.employee-row-actions {
+  margin-top: 0;
+}
+
+.employee-delete-button {
+  padding: 9px 14px;
+  border: none;
+  border-radius: 6px;
+  background: #dc2626;
+  color: white;
+  cursor: pointer;
+}
+
+.employee-form-actions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Responsive Design */
+
+@media (max-width: 650px) {
+  .employee-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .employees-page {
+    padding: 15px;
+  }
+
+  .employees-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
