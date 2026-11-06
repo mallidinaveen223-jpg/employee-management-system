@@ -56,3 +56,10 @@ desktop.ini
 
 # VS Code
 .vscode/
+
+# Temporary frontend backup
+frontend-copy-backup/
+
+# Backend configuration and secrets
+backend/src/main/resources/application.properties
+backend/src/main/resources/application-local.properties
