@@ -140,4 +140,8 @@ public class Employee {
     public String getEmployeeStatus() {
         return employmentStatus;
     }
+
+    public void setEmployemantStatus(String active) {
+        this.employmentStatus = active;
+    }
 }
