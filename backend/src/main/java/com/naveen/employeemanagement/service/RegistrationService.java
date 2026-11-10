@@ -9,7 +9,6 @@ import com.naveen.employeemanagement.dto.PendingRegistrationResponse;
 import java.util.stream.Collectors;
 
 import jakarta.transaction.Transactional;
-
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -22,11 +21,15 @@ public class RegistrationService {
     private final RegistrationRequestRepository registrationRequestRepository;
     private final BCryptPasswordEncoder passwordEncoder;
     private final EmployeeRepository employeeRepository;
+    private final EmployeeCodeGeneratorService employeeCodeGeneratorService;
 
     public RegistrationService(
-            RegistrationRequestRepository registrationRequestRepository, EmployeeRepository employeeRepository) {
+            RegistrationRequestRepository registrationRequestRepository,
+            EmployeeRepository employeeRepository,
+            EmployeeCodeGeneratorService employeeCodeGeneratorService) {
 
         this.registrationRequestRepository = registrationRequestRepository;
+        this.employeeCodeGeneratorService = employeeCodeGeneratorService;
         this.passwordEncoder = new BCryptPasswordEncoder();
         this.employeeRepository = employeeRepository;
     }
@@ -54,7 +57,6 @@ public class RegistrationService {
     @Transactional
     public Employee approveRegistration(
             Long registrationId,
-            String employeeCode,
             String department,
             String designation,
             Double salary,
@@ -69,9 +71,8 @@ public class RegistrationService {
             throw new IllegalArgumentException("Registration request is not pending");
         }
 
-        if (employeeRepository.existsByEmployeeCode(employeeCode)) {
-            throw new IllegalArgumentException("Employee code already exists");
-        }
+        // Automatically generate Employee Code
+        String employeeCode = employeeCodeGeneratorService.generateEmployeeCode();
 
         Employee employee = new Employee();
         employee.setName(request.getFullName());
@@ -84,12 +85,12 @@ public class RegistrationService {
         employee.setRole("EMPLOYEE");
         employee.setSalary(salary);
         employee.setJoiningDate(joiningDate);
+        employee.setApprovedAt(LocalDateTime.now());
         employee.setEmploymentStatus("ACTIVE");
 
         Employee savedEmployee = employeeRepository.save(employee);
 
         request.setStatus(RegistrationStatus.APPROVED);
-
         registrationRequestRepository.save(request);
 
         return savedEmployee;

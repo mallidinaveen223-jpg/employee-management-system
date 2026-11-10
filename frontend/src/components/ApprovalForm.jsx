@@ -4,7 +4,6 @@ import './ApprovalForm.css'
 
 function ApprovalForm({ registration, onSubmit, onCancel, loading }) {
   const [formData, setFormData] = useState({
-    employeeCode: '',
     department: '',
     designation: '',
     salary: '',
@@ -41,15 +40,6 @@ function ApprovalForm({ registration, onSubmit, onCancel, loading }) {
         <p>Email: {registration.email}</p>
 
         <form onSubmit={handleSubmit}>
-          <label>Employee Code</label>
-          <input
-            name="employeeCode"
-            value={formData.employeeCode}
-            onChange={handleChange}
-            placeholder="EMP1002"
-            required
-          />
-
           <label>Department</label>
           <input
             name="department"

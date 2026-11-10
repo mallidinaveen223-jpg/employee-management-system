@@ -3,7 +3,6 @@ package com.naveen.employeemanagement.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Positive;
 import java.time.LocalDateTime;
 import  jakarta.validation.constraints.PositiveOrZero;
 
@@ -19,6 +18,7 @@ public class Employee {
 
     @NotBlank(message = "Email is required")
     @Email(message = "Email must be valid")
+    @Column(nullable = false, unique = true)
     private String email;
 
     @Column(nullable = false)
@@ -36,6 +36,7 @@ public class Employee {
     private String designation;
     private String role = "EMPLOYEE"; // Default role
     private LocalDateTime joiningDate;
+    private LocalDateTime approvedAt;
     private String employmentStatus = "ACTIVE"; // Default employment status
 
     public Employee() {
@@ -141,7 +142,11 @@ public class Employee {
         return employmentStatus;
     }
 
-    public void setEmployemantStatus(String active) {
-        this.employmentStatus = active;
+    public LocalDateTime getApprovedAt() {
+        return approvedAt;
+    }
+
+    public void setApprovedAt(LocalDateTime approvedAt) {
+        this.approvedAt = approvedAt;
     }
 }

@@ -16,6 +16,9 @@ function Register() {
   const [messageType, setMessageType] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+
   function handleChange(event) {
     const { name, value } = event.target
 
@@ -71,6 +74,10 @@ function Register() {
         password: '',
         confirmPassword: ''
       })
+
+      setShowPassword(false)
+      setShowConfirmPassword(false)
+
     } catch (error) {
       setMessage(error.message || 'Registration failed. Please try again.')
       setMessageType('error')
@@ -137,34 +144,62 @@ function Register() {
             />
           </div>
 
+          {/* Password */}
           <div className="register-form-group">
             <label htmlFor="password">Password</label>
-            <input
-              id="password"
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="Create a password"
-              autoComplete="new-password"
-              minLength={8}
-              required
-            />
+
+            <div className="password-input-wrapper">
+              <input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="Create a password"
+                autoComplete="new-password"
+                minLength={8}
+                required
+              />
+
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? 'Hide' : 'Show'}
+              </button>
+            </div>
           </div>
 
+          {/* Confirm Password */}
           <div className="register-form-group">
             <label htmlFor="confirmPassword">Confirm Password</label>
-            <input
-              id="confirmPassword"
-              type="password"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              placeholder="Confirm your password"
-              autoComplete="new-password"
-              minLength={8}
-              required
-            />
+
+            <div className="password-input-wrapper">
+              <input
+                id="confirmPassword"
+                type={showConfirmPassword ? 'text' : 'password'}
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                placeholder="Confirm your password"
+                autoComplete="new-password"
+                minLength={8}
+                required
+              />
+
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                aria-label={
+                  showConfirmPassword ? 'Hide password' : 'Show password'
+                }
+              >
+                {showConfirmPassword ? 'Hide' : 'Show'}
+              </button>
+            </div>
           </div>
 
           {message && (

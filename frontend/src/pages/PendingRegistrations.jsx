@@ -70,8 +70,9 @@ function PendingRegistrations() {
         throw new Error(data.message || 'Registration approval failed.')
       }
 
-      setMessage(data.message || 'Registration approved successfully.')
-      setSelectedRegistration(null)
+      setMessage(
+  `${data.message}. Generated Employee Code: ${data.employeeCode}`
+)
 
       await fetchRegistrations()
     } catch (err) {

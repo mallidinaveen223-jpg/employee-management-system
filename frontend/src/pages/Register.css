@@ -115,3 +115,30 @@
     padding: 28px 22px;
   }
 }
+
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.password-input-wrapper input {
+  width: 100%;
+  padding-right: 65px;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  border: none;
+  background: transparent;
+  color: #2563eb;
+  cursor: pointer;
+  font-weight: 600;
+  padding: 6px;
+}
+
+.password-toggle:hover {
+  color: #1d4ed8;
+}

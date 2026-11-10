@@ -49,6 +49,11 @@ public class EmployeeService {
                 .orElseThrow(() -> new EmployeeNotFoundException(
                         "Employee not found with email: "+ email));
     }
+    public Employee getEmployeeByI(Long id){
+
+        return employeeRepository.findById(id)
+                .orElseThrow(()-> new EmployeeNotFoundException("Employee not found with id: "+ id));
+    }
 
     public Employee updateEmployee(Long id, Employee updatedEmployee){
 

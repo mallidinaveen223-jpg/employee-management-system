@@ -24,9 +24,13 @@ function Login() {
 
       const data = await loginUser(identifier.trim(), password)
 
+      console.log('LOGIN API DATA:', data)
+      console.log('EMPLOYEE NAME:', data.name)
+
       sessionStorage.setItem('token', data.token)
       sessionStorage.setItem('email', data.email)
       sessionStorage.setItem('role', data.role)
+      sessionStorage.setItem('name', data.name)
 
       const role = data.role.toUpperCase()
 
@@ -138,6 +142,7 @@ function Login() {
                   type="button"
                   className="password-toggle"
                   onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? 'Hide' : 'Show'}
                 </button>

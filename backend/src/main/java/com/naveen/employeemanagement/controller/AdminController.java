@@ -4,6 +4,7 @@ import com.naveen.employeemanagement.dto.EmployeeResponse;
 import com.naveen.employeemanagement.entity.Employee;
 import com.naveen.employeemanagement.entity.RegistrationRequest;
 import com.naveen.employeemanagement.dto.PendingRegistrationResponse;
+import com.naveen.employeemanagement.service.DashboardStatisticsService;
 import com.naveen.employeemanagement.service.EmployeeService;
 import com.naveen.employeemanagement.service.RegistrationService;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -25,11 +26,13 @@ public class AdminController {
 
     private final RegistrationService registrationService;
     private final EmployeeService employeeService;
+    private final DashboardStatisticsService dashboardStatisticsService;
 
     public AdminController(RegistrationService registrationService,
-                           EmployeeService employeeService) {
+                           EmployeeService employeeService, DashboardStatisticsService dashboardStatisticsService) {
         this.registrationService = registrationService;
         this.employeeService = employeeService;
+        this.dashboardStatisticsService = dashboardStatisticsService;
     }
 
     @GetMapping("/pending-registrations")
@@ -47,6 +50,14 @@ public class AdminController {
                 .toList();
         return ResponseEntity.ok(employees);
     }
+
+    @GetMapping("/dashboard/stats")
+    public ResponseEntity<Map<String, Object>> getDashboardStats() {
+
+        return ResponseEntity.ok(
+                dashboardStatisticsService.getDashbordStatistics());
+    }
+
     @PostMapping("/employees")
     public ResponseEntity<EmployeeResponse> createEmployee(
             @RequestBody Employee employee){
@@ -78,7 +89,7 @@ public class AdminController {
             @PathVariable Long id, @RequestBody ApprovalRequest request) {
 
         Employee employee = registrationService.approveRegistration(
-                id, request.getEmployeeCode(),
+                id,
                 request.getDepartment(),
                 request.getDesignation(),
                 request.getSalary(),
@@ -107,22 +118,13 @@ public class AdminController {
 
     public static class ApprovalRequest {
 
-        private String employeeCode;
         private String department;
         private String designation;
         private double salary;
 
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         private LocalDateTime joiningDate;
-
-        public String getEmployeeCode() {
-            return employeeCode;
-        }
-
-        public void setEmployeeCode(String employeeCode) {
-            this.employeeCode = employeeCode;
-        }
-
+        
         public String getDepartment() {
             return department;
         }
