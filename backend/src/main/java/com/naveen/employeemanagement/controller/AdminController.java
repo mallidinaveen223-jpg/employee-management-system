@@ -1,12 +1,14 @@
 package com.naveen.employeemanagement.controller;
 
 import com.naveen.employeemanagement.dto.EmployeeResponse;
+import com.naveen.employeemanagement.dto.UpdateEmployeeRequest;
 import com.naveen.employeemanagement.entity.Employee;
 import com.naveen.employeemanagement.entity.RegistrationRequest;
 import com.naveen.employeemanagement.dto.PendingRegistrationResponse;
 import com.naveen.employeemanagement.service.DashboardStatisticsService;
 import com.naveen.employeemanagement.service.EmployeeService;
 import com.naveen.employeemanagement.service.RegistrationService;
+import com.naveen.employeemanagement.dto.EmployeeRequest;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +17,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import  jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -60,9 +63,9 @@ public class AdminController {
 
     @PostMapping("/employees")
     public ResponseEntity<EmployeeResponse> createEmployee(
-            @RequestBody Employee employee){
+            @Valid @RequestBody EmployeeRequest request){
 
-        Employee savedEmployee = employeeService.createEmployee(employee);
+        Employee savedEmployee = employeeService.createEmployee(request);
 
         return ResponseEntity.ok(
                 EmployeeResponse.from(savedEmployee));
@@ -70,9 +73,9 @@ public class AdminController {
     @PutMapping("/employees/{id}")
     public ResponseEntity<EmployeeResponse> updateEmployee(
             @PathVariable Long id,
-            @RequestBody Employee employee){
+            @Valid @RequestBody UpdateEmployeeRequest request){
 
-        Employee updatedEmployee = employeeService.updateEmployee(id, employee);
+        Employee updatedEmployee = employeeService.updateEmployee(id, request);
 
         return  ResponseEntity.ok(EmployeeResponse.from(updatedEmployee));
     }

@@ -1,11 +1,9 @@
 
 package com.naveen.employeemanagement.controller;
 
-import com.naveen.employeemanagement.dto.EmployeeDirectoryResponse;
-import com.naveen.employeemanagement.dto.EmployeeResponse;
+import com.naveen.employeemanagement.dto.*;
 import com.naveen.employeemanagement.entity.Employee;
 import com.naveen.employeemanagement.service.EmployeeService;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -24,8 +22,12 @@ public class EmployeeController {
     }
 
     @PostMapping
-    public Employee createEmployee(@RequestBody @Valid Employee employee) {
-        return employeeService.saveEmployee(employee);
+    public ResponseEntity<EmployeeResponse> createEmployee(
+            @RequestBody @Valid EmployeeRequest request) {
+
+        Employee savedEmployee = employeeService.createEmployee(request);
+
+        return ResponseEntity.ok(EmployeeResponse.from(savedEmployee));
     }
 
     @GetMapping
@@ -61,11 +63,13 @@ public class EmployeeController {
     }
 
     @PutMapping("/{id}")
-    public Employee updateEmployee(
+    public ResponseEntity<EmployeeResponse> updateEmployee(
             @PathVariable Long id,
-            @RequestBody @Valid Employee employee) {
+            @RequestBody @Valid UpdateEmployeeRequest request) {
 
-        return employeeService.updateEmployee(id, employee);
+        Employee updatedEmployee = employeeService.updateEmployee(id, request);
+
+        return ResponseEntity.ok(EmployeeResponse.from(updatedEmployee));
     }
 
     @DeleteMapping("/{id}")
