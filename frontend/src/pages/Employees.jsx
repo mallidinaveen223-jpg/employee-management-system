@@ -1,5 +1,4 @@
-
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import './Employees.css'
 
 const API_URL = 'http://localhost:8080/api/admin/employees'
@@ -26,30 +25,52 @@ function Employees() {
   const [formData, setFormData] = useState(emptyForm)
   const [isSaving, setIsSaving] = useState(false)
 
-  const token = sessionStorage.getItem('token')
+  const loadEmployees = useCallback((signal) => {
+    const token = sessionStorage.getItem('token')
 
-  async function fetchEmployees() {
-    try {
-      setLoading(true)
-      setError('')
+    return fetch(API_URL, {
+      signal,
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Unable to fetch employees.')
+        }
 
-      const response = await fetch(API_URL, {
-        headers: {
-          Authorization: `Bearer ${token}`
+        return response.json()
+      })
+      .then((data) => {
+        if (!signal?.aborted) {
+          setEmployees(data)
         }
       })
+      .catch((err) => {
+        if (!signal?.aborted) {
+          setError(err.message || 'Unable to fetch employees.')
+        }
+      })
+      .finally(() => {
+        if (!signal?.aborted) {
+          setLoading(false)
+        }
+      })
+  }, [])
 
-      if (!response.ok) {
-        throw new Error('Unable to fetch employees.')
-      }
+  useEffect(() => {
+    const controller = new AbortController()
+    void loadEmployees(controller.signal)
 
-      const data = await response.json()
-      setEmployees(data)
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
+    return () => {
+      controller.abort()
     }
+  }, [loadEmployees])
+
+  function fetchEmployees() {
+    setLoading(true)
+    setError('')
+    return loadEmployees()
   }
 
   function handleEdit(employee) {
@@ -66,7 +87,8 @@ function Employees() {
       joiningDate: employee.joiningDate
         ? employee.joiningDate.substring(0, 10)
         : '',
-      employmentStatus: employee.employmentStatus || employee.employeeStatus || 'ACTIVE'
+      employmentStatus:
+        employee.employmentStatus || employee.employeeStatus || 'ACTIVE'
     })
 
     setError('')
@@ -89,6 +111,8 @@ function Employees() {
       setIsSaving(true)
       setError('')
       setMessage('')
+
+      const token = sessionStorage.getItem('token')
 
       const requestBody = {
         ...formData,
@@ -122,7 +146,7 @@ function Employees() {
 
       await fetchEmployees()
     } catch (err) {
-      setError(err.message)
+      setError(err.message || 'Employee update failed.')
     } finally {
       setIsSaving(false)
     }
@@ -136,6 +160,8 @@ function Employees() {
     try {
       setError('')
       setMessage('')
+
+      const token = sessionStorage.getItem('token')
 
       const response = await fetch(`${API_URL}/${id}`, {
         method: 'DELETE',
@@ -153,13 +179,9 @@ function Employees() {
       setMessage('Employee deleted successfully!')
       await fetchEmployees()
     } catch (err) {
-      setError(err.message)
+      setError(err.message || 'Unable to delete employee.')
     }
   }
-
-  useEffect(() => {
-    fetchEmployees()
-  }, [])
 
   const filteredEmployees = employees.filter((employee) =>
     [
@@ -171,7 +193,7 @@ function Employees() {
     ]
       .filter(Boolean)
       .some((value) =>
-        value.toLowerCase().includes(search.toLowerCase())
+        String(value).toLowerCase().includes(search.toLowerCase())
       )
   )
 
@@ -328,7 +350,7 @@ function Employees() {
         type="search"
         placeholder="Search by name, email, code or designation..."
         value={search}
-        onChange={(e) => setSearch(e.target.value)}
+        onChange={(event) => setSearch(event.target.value)}
       />
 
       {loading ? (
@@ -366,6 +388,7 @@ function Employees() {
                   <td>
                     <div className="employee-row-actions">
                       <button
+                        type="button"
                         className="employee-edit-button"
                         onClick={() => handleEdit(employee)}
                       >
@@ -373,6 +396,7 @@ function Employees() {
                       </button>
 
                       <button
+                        type="button"
                         className="employee-delete-button"
                         onClick={() => deleteEmployee(employee.id)}
                       >

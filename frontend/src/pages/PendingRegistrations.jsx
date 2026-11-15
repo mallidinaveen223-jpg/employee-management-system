@@ -1,5 +1,4 @@
-
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import ApprovalForm from '../components/ApprovalForm'
 import './PendingRegistrations.css'
 
@@ -13,33 +12,52 @@ function PendingRegistrations() {
   const [message, setMessage] = useState('')
   const [processingId, setProcessingId] = useState(null)
 
-  async function fetchRegistrations() {
-    try {
-      setLoading(true)
-      setError('')
+  const loadRegistrations = useCallback((signal) => {
+    const token = sessionStorage.getItem('token')
 
-      const token = sessionStorage.getItem('token')
-
-      const response = await fetch(
-        `${API_BASE_URL}/pending-registrations`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      )
-
-      if (!response.ok) {
-        throw new Error('Unable to fetch pending registrations.')
+    return fetch(`${API_BASE_URL}/pending-registrations`, {
+      signal,
+      headers: {
+        Authorization: `Bearer ${token}`
       }
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Unable to fetch pending registrations.')
+        }
 
-      const data = await response.json()
-      setRegistrations(data)
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
+        return response.json()
+      })
+      .then((data) => {
+        if (!signal?.aborted) {
+          setRegistrations(data)
+        }
+      })
+      .catch((err) => {
+        if (!signal?.aborted) {
+          setError(err.message || 'Unable to fetch pending registrations.')
+        }
+      })
+      .finally(() => {
+        if (!signal?.aborted) {
+          setLoading(false)
+        }
+      })
+  }, [])
+
+  useEffect(() => {
+    const controller = new AbortController()
+    void loadRegistrations(controller.signal)
+
+    return () => {
+      controller.abort()
     }
+  }, [loadRegistrations])
+
+  function fetchRegistrations() {
+    setLoading(true)
+    setError('')
+    return loadRegistrations()
   }
 
   async function handleApprove(approvalData) {
@@ -71,12 +89,12 @@ function PendingRegistrations() {
       }
 
       setMessage(
-  `${data.message}. Generated Employee Code: ${data.employeeCode}`
-)
+        `${data.message}. Generated Employee Code: ${data.employeeCode}`
+      )
 
       await fetchRegistrations()
     } catch (err) {
-      setError(err.message)
+      setError(err.message || 'Registration approval failed.')
     } finally {
       setProcessingId(null)
     }
@@ -116,15 +134,11 @@ function PendingRegistrations() {
 
       await fetchRegistrations()
     } catch (err) {
-      setError(err.message)
+      setError(err.message || 'Registration rejection failed.')
     } finally {
       setProcessingId(null)
     }
   }
-
-  useEffect(() => {
-    fetchRegistrations()
-  }, [])
 
   return (
     <div className="pending-page">
@@ -193,7 +207,9 @@ function PendingRegistrations() {
                         type="button"
                         className="approve-button"
                         disabled={processingId === registration.id}
-                        onClick={() => setSelectedRegistration(registration)}
+                        onClick={() =>
+                          setSelectedRegistration(registration)
+                        }
                       >
                         Approve
                       </button>

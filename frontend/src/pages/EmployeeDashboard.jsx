@@ -1,5 +1,4 @@
-
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import EmployeeDirectory from './EmployeeDirectory'
 import './EmployeeDashboard.css'
 
@@ -11,45 +10,66 @@ function EmployeeDashboard() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  async function fetchProfile() {
-    try {
-      setLoading(true)
-      setError('')
+  const loadProfile = useCallback((signal) => {
+    const token = sessionStorage.getItem('token')
 
-      const token = sessionStorage.getItem('token')
+    if (!token) {
+      window.location.href = '/'
+      return Promise.resolve()
+    }
 
-      if (!token) {
-        window.location.href = '/'
-        return
+    return fetch(API_URL, {
+      signal,
+      headers: {
+        Authorization: `Bearer ${token}`
       }
+    })
+      .then(async (response) => {
+        if (signal?.aborted) return null
 
-      const response = await fetch(API_URL, {
-        headers: {
-          Authorization: `Bearer ${token}`
+        if (response.status === 401 || response.status === 403) {
+          sessionStorage.clear()
+          window.location.href = '/'
+          return null
+        }
+
+        if (!response.ok) {
+          throw new Error('Unable to load employee profile.')
+        }
+
+        return response.json()
+      })
+      .then((data) => {
+        if (!signal?.aborted && data !== null) {
+          setEmployee(data)
         }
       })
-
-      if (response.status === 401 || response.status === 403) {
-        sessionStorage.clear()
-        window.location.href = '/'
-        return
-      }
-
-      if (!response.ok) {
-        throw new Error('Unable to load employee profile.')
-      }
-
-      setEmployee(await response.json())
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
-  }
+      .catch((err) => {
+        if (!signal?.aborted) {
+          setError(err.message || 'Unable to load employee profile.')
+        }
+      })
+      .finally(() => {
+        if (!signal?.aborted) {
+          setLoading(false)
+        }
+      })
+  }, [])
 
   useEffect(() => {
-    fetchProfile()
-  }, [])
+    const controller = new AbortController()
+    void loadProfile(controller.signal)
+
+    return () => {
+      controller.abort()
+    }
+  }, [loadProfile])
+
+  function fetchProfile() {
+    setLoading(true)
+    setError('')
+    return loadProfile()
+  }
 
   function handleLogout() {
     sessionStorage.clear()
@@ -62,7 +82,11 @@ function EmployeeDashboard() {
   }
 
   if (loading) {
-    return <div className="employee-loading">Loading your profile...</div>
+    return (
+      <div className="employee-loading">
+        Loading your profile...
+      </div>
+    )
   }
 
   return (
@@ -70,27 +94,25 @@ function EmployeeDashboard() {
       <aside className="employee-sidebar">
         <h2>EMS</h2>
 
+        <nav>
+          <button
+            className={`employee-nav-link ${
+              activePage === 'profile' ? 'employee-nav-active' : ''
+            }`}
+            onClick={() => setActivePage('profile')}
+          >
+            My Profile
+          </button>
 
-<nav>
-  <button
-    className={`employee-nav-link ${
-      activePage === 'profile' ? 'employee-nav-active' : ''
-    }`}
-    onClick={() => setActivePage('profile')}
-  >
-    My Profile
-  </button>
-
-  <button
-    className={`employee-nav-link ${
-      activePage === 'directory' ? 'employee-nav-active' : ''
-    }`}
-    onClick={() => setActivePage('directory')}
-  >
-    Employee Directory
-  </button>
-</nav>
-
+          <button
+            className={`employee-nav-link ${
+              activePage === 'directory' ? 'employee-nav-active' : ''
+            }`}
+            onClick={() => setActivePage('directory')}
+          >
+            Employee Directory
+          </button>
+        </nav>
       </aside>
 
       <main className="employee-main">
@@ -176,7 +198,9 @@ function EmployeeDashboard() {
 
                 <div className="profile-item">
                   <label>Employment Status</label>
-                  <p>{employee.employmentStatus || employee.employeeStatus}</p>
+                  <p>
+                    {employee.employmentStatus || employee.employeeStatus}
+                  </p>
                 </div>
               </div>
             </section>

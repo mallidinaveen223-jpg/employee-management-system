@@ -1,5 +1,4 @@
-
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import './EmployeeDirectory.css'
 
 const API_URL = 'http://localhost:8080/api/employees/directory'
@@ -10,35 +9,53 @@ function EmployeeDirectory() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  async function fetchEmployees() {
-    try {
-      setLoading(true)
-      setError('')
+  const loadEmployees = useCallback((signal) => {
+    const token = sessionStorage.getItem('token')
 
-      const token = sessionStorage.getItem('token')
+    return fetch(API_URL, {
+      signal,
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Unable to load employee directory.')
+        }
 
-      const response = await fetch(API_URL, {
-        headers: {
-          Authorization: `Bearer ${token}`
+        return response.json()
+      })
+      .then((data) => {
+        if (!signal?.aborted) {
+          setEmployees(data)
         }
       })
-
-      if (!response.ok) {
-        throw new Error('Unable to load employee directory.')
-      }
-
-      const data = await response.json()
-      setEmployees(data)
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
-  }
+      .catch((err) => {
+        if (!signal?.aborted) {
+          setError(err.message || 'Unable to load employee directory.')
+        }
+      })
+      .finally(() => {
+        if (!signal?.aborted) {
+          setLoading(false)
+        }
+      })
+  }, [])
 
   useEffect(() => {
-    fetchEmployees()
-  }, [])
+    const controller = new AbortController()
+    void loadEmployees(controller.signal)
+
+    return () => {
+      controller.abort()
+    }
+  }, [loadEmployees])
+
+  function fetchEmployees() {
+    setLoading(true)
+    setError('')
+    return loadEmployees()
+  }
 
   const filteredEmployees = employees.filter((employee) =>
     [
@@ -50,7 +67,7 @@ function EmployeeDirectory() {
     ]
       .filter(Boolean)
       .some((value) =>
-        value.toLowerCase().includes(search.toLowerCase())
+        String(value).toLowerCase().includes(search.toLowerCase())
       )
   )
 
