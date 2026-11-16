@@ -1,0 +1,16 @@
+.git
+**/node_modules
+**/dist
+**/target
+**/.idea
+**/.vscode
+**/.sonar
+**/logs
+**/*.log
+
+**/.env
+**/.env.*
+
+backend/src/main/resources/application.properties
+backend/src/main/resources/application-local.properties
+frontend-copy-backup/
