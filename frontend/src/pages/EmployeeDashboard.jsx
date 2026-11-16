@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import EmployeeDirectory from './EmployeeDirectory'
 import './EmployeeDashboard.css'
 
-const API_URL = 'http://localhost:8080/api/employees/me'
+const API_URL = '/api/employees/me'
 
 function EmployeeDashboard() {
   const [employee, setEmployee] = useState(null)

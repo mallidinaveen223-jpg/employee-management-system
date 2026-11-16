@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import './EmployeeDirectory.css'
 
-const API_URL = 'http://localhost:8080/api/employees/directory'
+const API_URL = '/api/employees/directory'
 
 function EmployeeDirectory() {
   const [employees, setEmployees] = useState([])

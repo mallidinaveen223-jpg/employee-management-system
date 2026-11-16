@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import ApprovalForm from '../components/ApprovalForm'
 import './PendingRegistrations.css'
 
-const API_BASE_URL = 'http://localhost:8080/api/admin'
+const API_BASE_URL = '/api/admin'
 
 function PendingRegistrations() {
   const [registrations, setRegistrations] = useState([])

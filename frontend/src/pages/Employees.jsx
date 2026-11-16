@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import './Employees.css'
 
-const API_URL = 'http://localhost:8080/api/admin/employees'
+const API_URL = '/api/admin/employees'
 
 const emptyForm = {
   name: '',

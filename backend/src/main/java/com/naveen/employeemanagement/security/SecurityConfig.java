@@ -2,8 +2,10 @@ package com.naveen.employeemanagement.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -40,27 +42,65 @@ public class SecurityConfig {
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
+        DaoAuthenticationProvider provider =
+                new DaoAuthenticationProvider(userDetailsService);
 
         provider.setPasswordEncoder(passwordEncoder());
+
         return provider;
     }
 
     @Bean
     public AuthenticationManager authenticationManager(
-        AuthenticationConfiguration configuration) throws Exception {
+            AuthenticationConfiguration configuration) throws Exception {
+
         return configuration.getAuthenticationManager();
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws  Exception {
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http) throws Exception {
 
-        http.csrf(csrf -> csrf.disable())
-                .cors(cors -> {})
+        http
+                // Authentication uses an explicit Bearer token header,
+                // not browser-managed authentication cookies.
+                .csrf(csrf -> csrf.disable())
+                .cors(Customizer.withDefaults())
                 .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                        session.sessionCreationPolicy(
+                                SessionCreationPolicy.STATELESS
+                        )
+                )
                 .authenticationProvider(authenticationProvider())
                 .authorizeHttpRequests(authz -> authz
+
+                        // React HTML, assets and browser page routes.
+                        // These rules do not grant access to protected APIs.
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/",
+                                "/index.html",
+                                "/assets/**",
+                                "/favicon.ico",
+                                "/vite.svg",
+                                "/register",
+                                "/dashboard",
+                                "/employee-dashboard"
+                        ).permitAll()
+
+                        .requestMatchers(
+                                HttpMethod.HEAD,
+                                "/",
+                                "/index.html",
+                                "/assets/**",
+                                "/favicon.ico",
+                                "/vite.svg",
+                                "/register",
+                                "/dashboard",
+                                "/employee-dashboard"
+                        ).permitAll()
+
+                        // Existing public authentication endpoints.
                         .requestMatchers(
                                 "/api/auth/register",
                                 "/api/auth/login",
@@ -69,42 +109,69 @@ public class SecurityConfig {
                                 "/api/auth/reset-password",
                                 "/error"
                         ).permitAll()
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/employee/**").hasRole("EMPLOYEE")
-                        .requestMatchers("/api/employees/me").hasAnyRole("ADMIN", "EMPLOYEE")
+
+                        // Existing API permissions.
+                        .requestMatchers("/api/admin/**")
+                        .hasRole("ADMIN")
+
+                        .requestMatchers("/api/employee/**")
+                        .hasRole("EMPLOYEE")
+
+                        .requestMatchers("/api/employees/me")
+                        .hasAnyRole("ADMIN", "EMPLOYEE")
+
                         .requestMatchers("/api/employees/directory")
                         .hasAnyRole("ADMIN", "EMPLOYEE")
-                        .requestMatchers("/api/employees/**").hasRole("ADMIN")
+
+                        .requestMatchers("/api/employees/**")
+                        .hasRole("ADMIN")
+
                         .anyRequest().authenticated()
-                ).addFilterBefore(
+                )
+                .addFilterBefore(
                         jwtAuthenticationFilter,
-                UsernamePasswordAuthenticationFilter.class
+                        UsernamePasswordAuthenticationFilter.class
                 );
+
         return http.build();
     }
+
     @Bean
-    public CorsConfigurationSource corsConfigurationSource(){
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
 
-    CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(
+                List.of(
+                        "http://localhost:5173",
+                        "http://localhost:5174"
+                )
+        );
 
-    configuration.setAllowedOrigins(
-            List.of("http://localhost:5173",
-            "http://localhost:5174")
-            );
+        configuration.setAllowedMethods(
+                List.of(
+                        "GET",
+                        "HEAD",
+                        "POST",
+                        "PUT",
+                        "DELETE",
+                        "OPTIONS"
+                )
+        );
 
-    configuration.setAllowedMethods(
-            List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(
+                List.of(
+                        "Authorization",
+                        "Content-Type"
+                )
+        );
 
-            configuration.setAllowedHeaders(
-                    List.of("Authorization","Content-Type"));
+        configuration.setAllowCredentials(false);
 
-            configuration.setAllowCredentials(false);
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
 
-            UrlBasedCorsConfigurationSource source =
-                    new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
 
-            source.registerCorsConfiguration("/**", configuration);
-
-            return source;
+        return source;
     }
 }
