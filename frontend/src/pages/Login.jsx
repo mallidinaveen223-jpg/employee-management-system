@@ -34,7 +34,7 @@ function Login() {
 
       const role = data.role.toUpperCase()
 
-      if (role === 'ADMIN') {
+      if (role === 'ADMIN' || role === 'SUPER_ADMIN') {
         window.history.pushState({}, '', '/dashboard')
         window.dispatchEvent(new PopStateEvent('popstate'))
       } else if (role === 'EMPLOYEE') {
