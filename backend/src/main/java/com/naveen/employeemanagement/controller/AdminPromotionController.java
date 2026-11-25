@@ -12,11 +12,15 @@ import jakarta.validation.constraints.Size;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
+import  com.naveen.employeemanagement.dto.AdminPromotionResponse;
 
 import java.util.List;
 import java.util.Map;
 
+@Validated
 @RestController
 @RequestMapping("/api/admin/promotions")
 public class AdminPromotionController {
@@ -29,60 +33,67 @@ public class AdminPromotionController {
         this.promotionService = promotionService;
     }
 
-    // ADMIN submits a request.
-    // SUPER_ADMIN's own request is approved immediately.
+
     @PostMapping("/requests")
-    public ResponseEntity<AdminPromotionRequest> requestPromotion(
+    public ResponseEntity<AdminPromotionResponse> requestPromotion(
             @Valid @RequestBody PromotionRequestBody body) {
 
-        AdminPromotionRequest request =
-                promotionService.requestPromotion(
-                        body.employeeId(),
-                        body.reason()
-                );
+        AdminPromotionRequest request = promotionService.requestPromotion(
+                body.employeeId(),
+                body.reason()
+        );
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(request);
+                .body(AdminPromotionResponse.from(request));
     }
 
-    // Admin can view requests they submitted.
     @GetMapping("/mine")
-    public List<AdminPromotionRequest> getMyRequests() {
-        return promotionService.getMyRequests();
+    public List<AdminPromotionResponse> getMyRequests() {
+        return promotionService.getMyRequests()
+                .stream()
+                .map(AdminPromotionResponse::from)
+                .toList();
     }
 
-    // Only SUPER_ADMIN can view the pending review queue.
     @GetMapping("/pending")
-    public List<AdminPromotionRequest> getPendingRequests() {
-        return promotionService.getPendingRequests();
+    public List<AdminPromotionResponse> getPendingRequests() {
+        return promotionService.getPendingRequests()
+                .stream()
+                .map(AdminPromotionResponse::from)
+                .toList();
     }
 
-    // Only SUPER_ADMIN can approve.
     @PostMapping("/{requestId}/approve")
-    public AdminPromotionRequest approve(
-            @PathVariable Long requestId,
-            @Valid @RequestBody(required = false)
-            ReviewRequestBody body) {
+    public AdminPromotionResponse approve(
+            @PathVariable
+            @Positive(message = "Requset ID must be positive.")
+            Long requestId,
+            @Valid @RequestBody(required = false) ReviewRequestBody body) {
 
-        return promotionService.approve(
+        AdminPromotionRequest request = promotionService.approve(
                 requestId,
                 body == null ? null : body.comment()
         );
+
+        return AdminPromotionResponse.from(request);
     }
 
-    // Only SUPER_ADMIN can reject.
     @PostMapping("/{requestId}/reject")
-    public AdminPromotionRequest reject(
-            @PathVariable Long requestId,
-            @Valid @RequestBody(required = false)
-            ReviewRequestBody body) {
+    public AdminPromotionResponse reject(
+            @PathVariable
+            @Positive(message = "Request ID must be positive.")
+            Long requestId,
+            @Valid @RequestBody(required = false) ReviewRequestBody body) {
 
-        return promotionService.reject(
+        AdminPromotionRequest request = promotionService.reject(
                 requestId,
                 body == null ? null : body.comment()
         );
+
+        return AdminPromotionResponse.from(request);
     }
+
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Map<String, String>> handleAccessDenied(
@@ -118,6 +129,23 @@ public class AdminPromotionController {
                         "message",
                         exception.getMessage()
                 ));
+    }
+    @ExceptionHandler(
+            org.springframework.web.bind.MethodArgumentNotValidException.class)
+
+    public ResponseEntity<Map<String, String>> handleValidationErrors(
+            MethodArgumentNotValidException exception){
+
+     String message = exception.getBindingResult()
+             .getFieldErrors()
+             .stream()
+             .findFirst()
+             .map(error -> error.getDefaultMessage())
+             .orElse("Invalid request.");
+
+     return ResponseEntity
+             .badRequest()
+             .body(Map.of("message", message));
     }
 
     public record PromotionRequestBody(

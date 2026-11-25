@@ -1,5 +1,8 @@
+
 package com.naveen.employeemanagement.controller;
 
+import com.naveen.employeemanagement.activation.service.ActivationEmailService;
+import com.naveen.employeemanagement.dto.RegistrationResult;
 import com.naveen.employeemanagement.entity.RegistrationRequest;
 import com.naveen.employeemanagement.service.RegistrationService;
 
@@ -18,38 +21,54 @@ import java.util.Map;
 public class RegistrationController {
 
     private final RegistrationService registrationService;
+    private final ActivationEmailService activationEmailService;
 
-    public RegistrationController(RegistrationService registrationService) {
+    public RegistrationController(
+            RegistrationService registrationService,
+            ActivationEmailService activationEmailService) {
+
         this.registrationService = registrationService;
+        this.activationEmailService = activationEmailService;
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<?> register(
+            @RequestBody RegisterRequest request) {
 
         try {
-            RegistrationRequest registrationRequest = new RegistrationRequest();
+            RegistrationRequest registrationRequest =
+                    new RegistrationRequest();
 
             registrationRequest.setFullName(request.getFullName());
             registrationRequest.setEmail(request.getEmail());
             registrationRequest.setMobile(request.getMobile());
 
-            // Raw password is temporarily passed here.
-            // RegistrationService will encrypt it using BCrypt.
-            registrationRequest.setPasswordHash(request.getPassword());
-
-            RegistrationRequest savedRequest =
+            RegistrationResult registrationResult =
                     registrationService.register(registrationRequest);
+
+            // Send activation email
+            activationEmailService.sendActivationEmail(
+                    registrationResult.getRegistrationRequest().getEmail(),
+                    registrationResult.getRegistrationRequest().getFullName(),
+                    registrationResult.getActivationToken()
+            );
 
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(Map.of(
-                            "message", "Registration successful. Admin approval is required.",
-                            "status", savedRequest.getStatus().name()
+                            "message",
+                            "Registration successful. Please check your email to activate your account.",
+                            "status",
+                            registrationResult.getRegistrationRequest()
+                                    .getStatus().name()
                     ));
 
         } catch (IllegalArgumentException exception) {
 
             return ResponseEntity.badRequest()
-                    .body(Map.of("message", exception.getMessage()));
+                    .body(Map.of(
+                            "message",
+                            exception.getMessage()
+                    ));
         }
     }
 
@@ -58,7 +77,6 @@ public class RegistrationController {
         private String fullName;
         private String email;
         private String mobile;
-        private String password;
 
         public String getFullName() {
             return fullName;
@@ -82,14 +100,6 @@ public class RegistrationController {
 
         public void setMobile(String mobile) {
             this.mobile = mobile;
-        }
-
-        public String getPassword() {
-            return password;
-        }
-
-        public void setPassword(String password) {
-            this.password = password;
         }
     }
 }

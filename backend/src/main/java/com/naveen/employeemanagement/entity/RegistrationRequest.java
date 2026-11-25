@@ -26,7 +26,7 @@ public class RegistrationRequest {
     @Column(nullable = false, length = 10)
     private String mobile;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String passwordHash;
 
     @Enumerated(EnumType.STRING)
