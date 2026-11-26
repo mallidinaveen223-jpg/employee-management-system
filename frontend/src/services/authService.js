@@ -1,7 +1,10 @@
-const API_BASE_URL = '/api/auth';
+
+import { API_BASE_URL } from '../config/api'
+
+const AUTH_API = `${API_BASE_URL}/api/auth`
 
 export async function loginUser(email, password) {
-    const response = await fetch(`${API_BASE_URL}/login`, {
+    const response = await fetch(`${AUTH_API}/login`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -19,7 +22,7 @@ export async function loginUser(email, password) {
 }
 
 export async function registerUser(formData) {
-    const response = await fetch(`${API_BASE_URL}/register`, {
+    const response = await fetch(`${AUTH_API}/register`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

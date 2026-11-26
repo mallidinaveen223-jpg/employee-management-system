@@ -1,7 +1,9 @@
+
 import { useCallback, useEffect, useState } from 'react'
+import { API_BASE_URL } from '../config/api'
 import './Employees.css'
 
-const API_URL = '/api/admin/employees'
+const API_URL = `${API_BASE_URL}/api/admin/employees`
 
 const emptyForm = {
   name: '',

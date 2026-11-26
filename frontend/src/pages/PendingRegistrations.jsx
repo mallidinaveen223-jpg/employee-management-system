@@ -1,8 +1,10 @@
+
 import { useCallback, useEffect, useState } from 'react'
 import ApprovalForm from '../components/ApprovalForm'
+import { API_BASE_URL } from '../config/api'
 import './PendingRegistrations.css'
 
-const API_BASE_URL = '/api/admin'
+const ADMIN_API = `${API_BASE_URL}/api/admin`
 
 function PendingRegistrations() {
   const [registrations, setRegistrations] = useState([])
@@ -15,7 +17,7 @@ function PendingRegistrations() {
   const loadRegistrations = useCallback((signal) => {
     const token = sessionStorage.getItem('token')
 
-    return fetch(`${API_BASE_URL}/pending-registrations`, {
+    return fetch(`${ADMIN_API}/pending-registrations`, {
       signal,
       headers: {
         Authorization: `Bearer ${token}`
@@ -71,7 +73,7 @@ function PendingRegistrations() {
       const token = sessionStorage.getItem('token')
 
       const response = await fetch(
-        `${API_BASE_URL}/approve/${id}`,
+        `${ADMIN_API}/approve/${id}`,
         {
           method: 'PUT',
           headers: {
@@ -92,6 +94,7 @@ function PendingRegistrations() {
         `${data.message}. Generated Employee Code: ${data.employeeCode}`
       )
 
+      setSelectedRegistration(null)
       await fetchRegistrations()
     } catch (err) {
       setError(err.message || 'Registration approval failed.')
@@ -115,7 +118,7 @@ function PendingRegistrations() {
       const token = sessionStorage.getItem('token')
 
       const response = await fetch(
-        `${API_BASE_URL}/reject/${id}`,
+        `${ADMIN_API}/reject/${id}`,
         {
           method: 'PUT',
           headers: {

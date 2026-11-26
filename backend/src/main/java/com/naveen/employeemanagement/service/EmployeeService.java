@@ -1,3 +1,4 @@
+
 package com.naveen.employeemanagement.service;
 
 import com.naveen.employeemanagement.entity.Employee;
@@ -14,33 +15,51 @@ public class EmployeeService {
 
     private final EmployeeRepository employeeRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmployeeCodeGeneratorService employeeCodeGeneratorService;
 
-    public EmployeeService(EmployeeRepository employeeRepository,
-                           PasswordEncoder passwordEncoder) {
+    public EmployeeService(
+            EmployeeRepository employeeRepository,
+            PasswordEncoder passwordEncoder,
+            EmployeeCodeGeneratorService employeeCodeGeneratorService) {
 
         this.employeeRepository = employeeRepository;
         this.passwordEncoder = passwordEncoder;
+        this.employeeCodeGeneratorService = employeeCodeGeneratorService;
     }
+
     public Employee saveEmployee(Employee employee) {
+
+        if (employee.getEmployeeCode() == null ||
+                employee.getEmployeeCode().isBlank()) {
+
+            employee.setEmployeeCode(
+                    employeeCodeGeneratorService.generateEmployeeCode()
+            );
+        }
+
         return employeeRepository.save(employee);
     }
+
     public Employee createEmployee(Employee employee) {
 
-        if(employeeRepository.findByEmail(employee.getEmail()).isPresent()) {
+        if (employeeRepository.findByEmail(employee.getEmail()).isPresent()) {
             throw new IllegalArgumentException("Email already exists");
         }
-        if (employee.getEmployeeCode() != null &&
-                employeeRepository.existsByEmployeeCode(employee.getEmployeeCode())) {
-            throw new IllegalArgumentException("Employee code already exists");
-        }
+
+        employee.setEmployeeCode(
+                employeeCodeGeneratorService.generateEmployeeCode()
+        );
+
         employee.setPasswordHash(
-                passwordEncoder.encode(employee.getPasswordHash()));
+                passwordEncoder.encode(employee.getPasswordHash())
+        );
 
         employee.setRole("EMPLOYEE");
         employee.setEmploymentStatus("ACTIVE");
 
         return employeeRepository.save(employee);
     }
+
     public Employee createEmployee(EmployeeRequest request) {
 
         if (employeeRepository.findByEmail(request.getEmail()).isPresent()) {
@@ -51,8 +70,15 @@ public class EmployeeService {
 
         employee.setName(request.getName());
         employee.setEmail(request.getEmail());
+
+        employee.setEmployeeCode(
+                employeeCodeGeneratorService.generateEmployeeCode()
+        );
+
         employee.setPasswordHash(
-                passwordEncoder.encode(request.getPassword()));
+                passwordEncoder.encode(request.getPassword())
+        );
+
         employee.setDepartment(request.getDepartment());
         employee.setSalary(request.getSalary());
         employee.setMobile(request.getMobile());
@@ -63,26 +89,36 @@ public class EmployeeService {
 
         return employeeRepository.save(employee);
     }
+
     public List<Employee> getAllEmployees() {
         return employeeRepository.findAll();
     }
-    public Employee getEmployeeByEmail(String email){
+
+    public Employee getEmployeeByEmail(String email) {
 
         return employeeRepository.findByEmail(email)
-                .orElseThrow(() -> new EmployeeNotFoundException(
-                        "Employee not found with email: "+ email));
+                .orElseThrow(() ->
+                        new EmployeeNotFoundException(
+                                "Employee not found with email: " + email
+                        ));
     }
-    public Employee getEmployeeByI(Long id){
+
+    public Employee getEmployeeByI(Long id) {
 
         return employeeRepository.findById(id)
-                .orElseThrow(()-> new EmployeeNotFoundException("Employee not found with id: "+ id));
+                .orElseThrow(() ->
+                        new EmployeeNotFoundException(
+                                "Employee not found with id: " + id
+                        ));
     }
 
-    public Employee updateEmployee(Long id, Employee updatedEmployee){
+    public Employee updateEmployee(Long id, Employee updatedEmployee) {
 
         Employee existingEmployee = employeeRepository.findById(id)
                 .orElseThrow(() ->
-                        new EmployeeNotFoundException("Employee not found with id: " + id));
+                        new EmployeeNotFoundException(
+                                "Employee not found with id: " + id
+                        ));
 
         existingEmployee.setName(updatedEmployee.getName());
         existingEmployee.setEmail(updatedEmployee.getEmail());
@@ -91,16 +127,20 @@ public class EmployeeService {
         existingEmployee.setDesignation(updatedEmployee.getDesignation());
         existingEmployee.setSalary(updatedEmployee.getSalary());
         existingEmployee.setJoiningDate(updatedEmployee.getJoiningDate());
-        existingEmployee.setEmploymentStatus(updatedEmployee.getEmploymentStatus());
+        existingEmployee.setEmploymentStatus(
+                updatedEmployee.getEmploymentStatus()
+        );
 
         return employeeRepository.save(existingEmployee);
     }
+
     public Employee updateEmployee(Long id, UpdateEmployeeRequest request) {
 
         Employee existingEmployee = employeeRepository.findById(id)
                 .orElseThrow(() ->
                         new EmployeeNotFoundException(
-                                "Employee not found with id: " + id));
+                                "Employee not found with id: " + id
+                        ));
 
         existingEmployee.setName(request.getName());
         existingEmployee.setEmail(request.getEmail());
@@ -112,11 +152,13 @@ public class EmployeeService {
         return employeeRepository.save(existingEmployee);
     }
 
-    public void deleteEmployee(Long id){
+    public void deleteEmployee(Long id) {
 
         Employee existingEmployee = employeeRepository.findById(id)
                 .orElseThrow(() ->
-                        new EmployeeNotFoundException("Employee not found with id: " + id));
+                        new EmployeeNotFoundException(
+                                "Employee not found with id: " + id
+                        ));
 
         employeeRepository.delete(existingEmployee);
     }

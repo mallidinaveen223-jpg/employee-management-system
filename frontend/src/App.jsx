@@ -5,6 +5,7 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import AdminDashboard from './pages/AdminDashboard'
 import EmployeeDashboard from './pages/EmployeeDashboard'
+import ActivateAccount from './pages/ActivateAccount'
 
 function getCurrentPage() {
   const path = window.location.pathname
@@ -13,6 +14,9 @@ function getCurrentPage() {
   if (path === '/register') {
     return 'register'
   }
+  if (path === '/activate') {
+  return 'activate'
+}
 
   if (path === '/dashboard' && role === 'ADMIN') {
     return 'dashboard'
@@ -43,6 +47,9 @@ function App() {
   if (page === 'register') {
     return <Register />
   }
+  if (page === 'activate') {
+  return <ActivateAccount />
+}
 
   if (page === 'dashboard') {
     return <AdminDashboard />
